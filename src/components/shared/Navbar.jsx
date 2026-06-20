@@ -2,8 +2,10 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Menu, User, LogOut, Crown, Sun } from "lucide-react";
+import toast from "react-hot-toast";
+
 import {
   Sheet,
   SheetContent,
@@ -21,8 +23,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 import Logo from "./Logo";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { authClient } from "@/lib/auth-client";
+import { Spinner } from "@/components/ui/spinner";
 
-// Nav Links
+// Nav Links Configuration
 const navLinks = [
   { name: "Home", href: "/", private: false },
   { name: "Browse Recipes", href: "/recipes", private: false },
@@ -31,20 +35,31 @@ const navLinks = [
 
 export default function Navbar() {
   const pathname = usePathname();
+  const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const [user, setUser] = useState({
-    name: "Chef Gourmet",
-    email: "chef@recipehub.com",
-    role: "user", // "user" or "admin"
-    isPremium: true, // Toggles the premium indicator badge
-  });
-  //   const user = null;
+  const { data: session, isPending } = authClient.useSession();
+  const user = session?.user;
 
-  const handleLogout = () => {
-    setUser(null);
+  // Real Asynchronous Logout Trigger Pipeline
+  const handleLogout = async () => {
+    try {
+      await authClient.signOut({
+        onSuccess: () => {
+          toast.success("Logged out successfully");
+          setIsMobileMenuOpen(false);
+          router.refresh();
+        },
+        onError: (ctx) => {
+          toast.error(ctx.error.message || "Failed to sign out.");
+        },
+      });
+    } catch (err) {
+      toast.error("An unexpected error occurred during logout.");
+    }
   };
 
+  // Filter links based on authentic verification
   const filteredLinks = navLinks.filter((link) => !link.private || user);
 
   return (
@@ -83,23 +98,28 @@ export default function Navbar() {
               <Sun className="w-5 h-5" />
             </button>
 
-            {user ? (
-              /* Authenticated Dropdown */
+            {isPending ? (
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-gray-300 animate-pulse" />
+                <div className="w-20 h-4 rounded bg-gray-300 animate-pulse" />
+              </div>
+            ) : user ? (
+              /* Authenticated User Dropdown Menu layout */
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button className="flex items-center gap-2 p-1.5 px-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors focus:outline-none">
                     <Avatar className="h-7 w-7">
                       <AvatarImage
                         referrerPolicy="no-referrer"
-                        src={user?.image}
-                        alt={user?.name}
+                        src={user?.image || ""}
+                        alt={user?.name || "User profile photo"}
                       />
-                      <AvatarFallback>
-                        {user?.name ? user.name.charAt(0) : "U"}
+                      <AvatarFallback className="text-xs font-bold bg-primary/10 text-primary">
+                        {user?.name ? user.name.charAt(0).toUpperCase() : "U"}
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex flex-col text-left">
-                      <span className="text-xs font-semibold max-w-32 truncate flex items-center gap-1">
+                      <span className="text-xs font-semibold max-w-30 truncate flex items-center gap-1">
                         {user.name}
                         {user.isPremium && (
                           <span className="text-[10px] bg-warning/10 text-amber-500 font-extrabold px-1 rounded flex items-center gap-0.5">
@@ -146,7 +166,7 @@ export default function Navbar() {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              /* Unauthenticated Layout Buttons */
+              /* Unauthenticated Buttons */
               <div className="flex items-center gap-2">
                 <Link
                   href="/login"
@@ -164,7 +184,7 @@ export default function Navbar() {
             )}
           </div>
 
-          {/* MOBILE RESPONSIVE SECTION: Triggering Shadcn Sheet */}
+          {/* MOBILE RESPONSIVE DRAWER SECTION */}
           <div className="flex md:hidden items-center gap-2">
             <button className="p-2 rounded-lg text-muted-foreground hover:bg-accent transition-colors">
               <Sun className="w-5 h-5" />
@@ -187,7 +207,6 @@ export default function Navbar() {
                     </SheetTitle>
                   </SheetHeader>
 
-                  {/* Navigation Links inside Sheet */}
                   <ul className="space-y-2">
                     {filteredLinks.map((link) => {
                       const isActive = pathname === link.href;
@@ -210,14 +229,30 @@ export default function Navbar() {
                   </ul>
                 </div>
 
-                {/* Auth Controls at Bottom of Mobile Drawer */}
+                {/* Mobile Drawer Auth Area */}
                 <div className="border-t pt-4">
-                  {user ? (
+                  {isPending ? (
+                    <div className="flex items-center gap-3 px-2 pb-2">
+                      <div className="w-9 h-9 rounded-full bg-gray-300 animate-pulse" />
+                      <div className="truncate grow">
+                        <div className="w-20 h-4 rounded bg-gray-300 animate-pulse mb-1" />
+                        <div className="w-full h-3 rounded bg-gray-300 animate-pulse" />
+                      </div>
+                    </div>
+                  ) : user ? (
                     <div className="space-y-3">
                       <div className="flex items-center gap-3 px-2 pb-2">
-                        <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold border border-primary/20">
-                          {user.name[0]}
-                        </div>
+                        <Avatar className="h-9 w-9">
+                          <AvatarImage
+                            src={user?.image || ""}
+                            alt={user?.name || ""}
+                          />
+                          <AvatarFallback className="text-sm font-bold bg-primary/10 text-primary">
+                            {user?.name
+                              ? user.name.charAt(0).toUpperCase()
+                              : "U"}
+                          </AvatarFallback>
+                        </Avatar>
                         <div className="truncate">
                           <p className="text-sm font-semibold flex items-center gap-1">
                             {user.name}
