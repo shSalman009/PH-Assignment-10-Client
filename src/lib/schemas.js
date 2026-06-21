@@ -40,3 +40,29 @@ export const loginFormSchema = z.object({
 
   password: z.string().min(1, "Password is required"),
 });
+
+// 3. RECIPE SUBMISSION FORM VALIDATION SCHEMA
+export const recipeFormSchema = z.object({
+  name: z.string().min(3, "Recipe title must be at least 3 characters long"),
+  category: z.string().min(1, "Please select a valid category class"),
+  cuisineType: z.string().min(2, "Cuisine type is required"),
+  difficulty: z.string().min(1, "Please select a difficulty level"),
+  prepTime: z.coerce
+    .number()
+    .positive("Preparation time must be a positive number")
+    .min(1, "Minimum prep time is 1 minute"),
+  ingredients: z
+    .array(
+      z.object({
+        value: z.string().min(1, "Ingredient line cannot be empty"),
+      }),
+    )
+    .min(1, "Provide at least one ingredient"),
+  instructions: z
+    .array(
+      z.object({
+        value: z.string().min(1, "Instruction step cannot be empty"),
+      }),
+    )
+    .min(1, "Provide at least one preparation step"),
+});
