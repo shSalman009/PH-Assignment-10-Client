@@ -33,8 +33,7 @@ export default function RootLayout({ children }) {
     >
       <body className="min-h-screen flex flex-col font-sans text-foreground bg-background antialiased">
         <Navbar />
-        <main className="flex-1">{children}</main>
-        <Footer />
+        {children}
         <Toaster position="top-center" reverseOrder={false} />
       </body>
     </html>
