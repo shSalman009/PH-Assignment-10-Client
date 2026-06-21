@@ -1,9 +1,9 @@
 "use server";
 
-import { serverMutation } from "../core/server";
+import { apiClient } from "../services/apiClient";
 
 export async function createRecipeAction(recipePayload) {
-  const result = await serverMutation("/recipes", {
+  const result = await apiClient("/recipes", {
     method: "POST",
     body: JSON.stringify(recipePayload),
   });

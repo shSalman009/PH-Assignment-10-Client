@@ -2,7 +2,7 @@
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-export async function serverMutation(endpoint, options = {}) {
+export async function apiClient(endpoint, options = {}) {
   const url = `${BASE_URL}${endpoint.startsWith("/") ? endpoint : `/${endpoint}`}`;
 
   const headers = {
@@ -22,6 +22,7 @@ export async function serverMutation(endpoint, options = {}) {
     }
 
     const data = await response.json();
+
     if (!response.ok) {
       return {
         success: false,
