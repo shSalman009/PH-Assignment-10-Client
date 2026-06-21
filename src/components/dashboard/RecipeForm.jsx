@@ -24,20 +24,23 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import toast from "react-hot-toast";
-import { createRecipeAction } from "@/lib/actions/recipes";
+import { createRecipeAction, updateRecipeAction } from "@/lib/actions/recipes";
 import { recipeFormSchema } from "@/lib/schemas";
 
-export default function AddRecipeForm() {
+// Accept initialData for Edit Mode
+export default function RecipeForm({ initialData = null }) {
+  console.log(initialData);
   const router = useRouter();
   const { data: session } = authClient.useSession();
+  const isEditMode = !!initialData;
 
   const [imageFile, setImageFile] = useState(null);
-  const [imagePreview, setImagePreview] = useState("");
+  const [imagePreview, setImagePreview] = useState(initialData?.image || "");
   const [imageError, setImageError] = useState("");
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Initialize React Hook Form with Zod validation
+  // Map default values dynamically for Edit Mode vs Create Mode
   const {
     register,
     control,
@@ -47,13 +50,17 @@ export default function AddRecipeForm() {
   } = useForm({
     resolver: zodResolver(recipeFormSchema),
     defaultValues: {
-      name: "",
-      category: "",
-      cuisineType: "",
-      difficulty: "",
-      prepTime: "",
-      ingredients: [{ value: "" }],
-      instructions: [{ value: "" }],
+      name: initialData?.name || "",
+      category: initialData?.category || "",
+      cuisineType: initialData?.cuisineType || "",
+      difficulty: initialData?.difficultyLevel || initialData?.difficulty || "",
+      prepTime: initialData?.preparationTime || initialData?.prepTime || "",
+      ingredients: initialData?.ingredients
+        ? initialData.ingredients.map((ing) => ({ value: ing }))
+        : [{ value: "" }],
+      instructions: initialData?.instructions
+        ? initialData.instructions.map((inst) => ({ value: inst }))
+        : [{ value: "" }],
     },
   });
 
@@ -68,7 +75,6 @@ export default function AddRecipeForm() {
     remove: removeInstruction,
   } = useFieldArray({ control, name: "instructions" });
 
-  // Handle image file selection and preview generation
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -78,9 +84,9 @@ export default function AddRecipeForm() {
     }
   };
 
-  // Validate that an image file has been selected before allowing form submission
+  // validation image presence before allowing form submission
   const validateImage = () => {
-    if (!imageFile) {
+    if (!imageFile && !imagePreview) {
       setImageError("Please upload a display header image for this recipe.");
       return false;
     }
@@ -88,30 +94,38 @@ export default function AddRecipeForm() {
     return true;
   };
 
-  // Handle form submission: upload image to Imgbb, then create recipe with returned image URL
+  // Main form submission handler for both Create and Edit modes
   const onSubmit = async (data) => {
     if (!validateImage()) return;
 
     setIsSubmitting(true);
+    const progressToast = toast.loading(
+      isEditMode
+        ? "Saving recipe modifications..."
+        : "Publishing new recipe...",
+    );
 
     try {
-      // Upload image to Imgbb
-      const formData = new FormData();
-      formData.append("image", imageFile);
+      let uploadedImageUrl = imagePreview;
 
-      const imgbbRes = await fetch(
-        `https://api.imgbb.com/1/upload?key=${process.env.NEXT_PUBLIC_IMGBB_API_KEY}`,
-        {
-          method: "POST",
-          body: formData,
-        },
-      );
-      const imgbbData = await imgbbRes.json();
-      if (!imgbbData.success) {
-        throw new Error("Image hosting platform upload failed.");
+      // Only upload to Imgbb if a new image file is selected
+      if (imageFile) {
+        const formData = new FormData();
+        formData.append("image", imageFile);
+
+        const imgbbRes = await fetch(
+          `https://api.imgbb.com/1/upload?key=${process.env.NEXT_PUBLIC_IMGBB_API_KEY}`,
+          {
+            method: "POST",
+            body: formData,
+          },
+        );
+        const imgbbData = await imgbbRes.json();
+        if (!imgbbData.success) {
+          throw new Error("Image hosting platform upload failed.");
+        }
+        uploadedImageUrl = imgbbData.data.url;
       }
-
-      const uploadedImageUrl = imgbbData.data.url;
 
       const recipePayload = {
         name: data.name,
@@ -122,32 +136,46 @@ export default function AddRecipeForm() {
         preparationTime: data.prepTime,
         ingredients: data.ingredients.map((item) => item.value),
         instructions: data.instructions.map((item) => item.value),
-        userId: session?.user?.id,
-        likeCount: 0,
-        isFeatured: false,
+        userId: initialData?.userId || session?.user?.id,
+        likeCount: initialData?.likeCount || 0,
+        isFeatured: initialData?.isFeatured || false,
       };
-      const response = await createRecipeAction(recipePayload);
-      if (!response.success) {
-        throw new Error(response.error || "Recipe creation failed.");
+
+      // Conditionally execute the right action based on mode
+      let response;
+      if (isEditMode) {
+        response = await updateRecipeAction(initialData._id, recipePayload);
+      } else {
+        response = await createRecipeAction(recipePayload);
       }
 
-      // Reset form and state after successful submission
-      toast.success("Recipe published successfully!");
+      if (!response.success) {
+        throw new Error(response.error || "Failed to process recipe request.");
+      }
+
+      toast.success(
+        isEditMode
+          ? "Recipe updated successfully!"
+          : "Recipe published successfully!",
+        { id: progressToast },
+      );
+
       setImageFile(null);
       setImagePreview("");
       reset();
 
-      // Redirect to the user's recipe collection page
       router.push("/dashboard/my-recipes");
     } catch (error) {
-      toast.error(error.message);
+      toast.error(error.message, { id: progressToast });
     } finally {
       setIsSubmitting(false);
     }
   };
-  const onInvalidSubmit = (errors) => {
+
+  const onInvalidSubmit = () => {
     validateImage();
   };
+
   return (
     <form
       onSubmit={handleSubmit(onSubmit, onInvalidSubmit)}
@@ -157,7 +185,9 @@ export default function AddRecipeForm() {
       <div className="lg:col-span-2 space-y-6">
         <Card className="shadow-sm">
           <CardHeader>
-            <CardTitle className="text-lg">Recipe Core Details</CardTitle>
+            <CardTitle className="text-lg">
+              {isEditMode ? "Modify Recipe Details" : "Recipe Core Details"}
+            </CardTitle>
             <CardDescription>
               Primary identification details stored in your collections
               registry.
@@ -368,9 +398,11 @@ export default function AddRecipeForm() {
       </div>
 
       {/* RIGHT MEDIA COLUMN */}
-      <div className="space-y-6 lg:sticky lg:top-36">
+      <div className="space-y-6 lg:sticky lg:top-24">
         <Card
-          className={`shadow-sm transition-colors ${imageError ? "border-destructive bg-destructive/5" : ""}`}
+          className={`shadow-sm transition-colors ${
+            imageError ? "border-destructive bg-destructive/5" : ""
+          }`}
         >
           <CardHeader>
             <CardTitle className="text-lg">Recipe Media</CardTitle>
@@ -417,7 +449,6 @@ export default function AddRecipeForm() {
               />
             </div>
 
-            {/* Clean Inline Error Warning */}
             {imageError && (
               <p className="text-xs font-semibold text-destructive pl-1">
                 {imageError}
@@ -435,9 +466,11 @@ export default function AddRecipeForm() {
             >
               {isSubmitting ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin mr-2" />{" "}
-                  Publishing...
+                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                  {isEditMode ? "Saving..." : "Publishing..."}
                 </>
+              ) : isEditMode ? (
+                "Save Changes"
               ) : (
                 "Publish Recipe"
               )}

@@ -1,4 +1,4 @@
-import AddRecipeForm from "@/components/dashboard/add-recipe/AddRecipeForm";
+import RecipeForm from "@/components/dashboard/RecipeForm";
 
 export const metadata = {
   title: "Add New Recipe | Dashboard",
@@ -16,7 +16,7 @@ export default function AddRecipePage() {
         </p>
       </div>
 
-      <AddRecipeForm />
+      <RecipeForm />
     </div>
   );
 }
