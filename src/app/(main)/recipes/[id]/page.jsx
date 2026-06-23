@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import RecipeActionsRow from "@/components/recipes/RecipeActionsRow";
 import { getRecipeById } from "@/lib/queries/recipes";
+import PurchaseButton from "@/components/recipes/PurchaseButton";
 
 export async function generateMetadata({ params }) {
   const { id } = await params;
@@ -194,10 +195,7 @@ export default async function RecipeDetailsPage({ params }) {
                 </p>
               </div>
 
-              <button className="w-full h-11 cursor-pointer rounded-xl bg-orange-600 hover:bg-orange-500 text-white font-bold text-sm tracking-wide shadow-sm transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
-                <CreditCard className="h-4 w-4" />
-                Unlock Recipe Guide
-              </button>
+              <PurchaseButton recipeId={recipe._id} price={4.99} />
             </div>
           </div>
         </div>
