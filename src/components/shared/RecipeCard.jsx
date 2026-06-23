@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { Clock, ArrowUpRight, Heart } from "lucide-react";
+import { Clock, ArrowUpRight } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import Image from "next/image";
 
@@ -37,12 +37,6 @@ export default function RecipeCard({ recipe }) {
             {recipe.category || "Recipe"}
           </span>
         </div>
-
-        <button className="absolute top-2.5 right-2.5 flex h-7 w-7 items-center justify-center rounded-full bg-white/80 text-zinc-500 backdrop-blur-sm transition-all hover:bg-white hover:text-red-500 shadow-sm z-10">
-          <Heart
-            className={`h-3.5 w-3.5 ${false ? "fill-current text-red-500" : ""}`}
-          />
-        </button>
       </div>
 
       {/* Recipe Info */}
