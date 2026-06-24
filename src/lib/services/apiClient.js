@@ -1,5 +1,7 @@
 "use server";
 
+import { getUserToken } from "./session";
+
 const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export async function apiClient(endpoint, options = {}) {
@@ -11,6 +13,11 @@ export async function apiClient(endpoint, options = {}) {
   };
 
   try {
+    const token = await getUserToken();
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+
     const response = await fetch(url, {
       ...options,
       headers,

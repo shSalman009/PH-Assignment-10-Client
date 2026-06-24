@@ -7,3 +7,15 @@ export const getUserSession = async () => {
   });
   return session?.user || null;
 };
+
+export const getUserToken = async () => {
+  try {
+    const { token } = await auth.api.getToken({
+      headers: await headers(),
+    });
+
+    return token ? token : "";
+  } catch (error) {
+    return "";
+  }
+};
