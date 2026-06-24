@@ -1,17 +1,12 @@
 import React from "react";
 import { notFound } from "next/navigation";
 import Image from "next/image";
-import {
-  Clock,
-  ChefHat,
-  Flame,
-  ListCheck,
-  Lock,
-  CreditCard,
-} from "lucide-react";
+import { Clock, ChefHat, Flame, ListCheck, Lock } from "lucide-react";
 import RecipeActionsRow from "@/components/recipes/RecipeActionsRow";
 import { getRecipeById } from "@/lib/queries/recipes";
 import PurchaseButton from "@/components/recipes/PurchaseButton";
+import { getUserSession } from "@/lib/services/session";
+import { getTransaction } from "@/lib/queries/transactions";
 
 export async function generateMetadata({ params }) {
   const { id } = await params;
@@ -34,8 +29,16 @@ export default async function RecipeDetailsPage({ params }) {
 
   const recipe = response.data;
 
-  // TODO: Will do later
-  const isPurchased = false;
+  const user = await getUserSession();
+  const isLoggedIn = !!user;
+
+  let isPurchased = false;
+  if (isLoggedIn) {
+    const transaction = await getTransaction(id);
+    if (transaction?.data?._id) {
+      isPurchased = true;
+    }
+  }
 
   return (
     <div className="min-h-screen bg-zinc-50/50 pb-16 pt-8">
@@ -166,36 +169,58 @@ export default async function RecipeDetailsPage({ params }) {
             </div>
           </div>
 
-          {/* Payment Button */}
+          {/* Payment Container Card */}
           <div className="space-y-6">
             <div className="bg-zinc-900 text-white border border-zinc-800 rounded-2xl p-6 shadow-md space-y-6">
               <div className="space-y-1">
-                <span className="text-zinc-400 text-xs font-semibold uppercase tracking-wider">
-                  Premium Access
+                <span
+                  className={`text-xs font-semibold uppercase tracking-wider ${isPurchased ? "text-emerald-400" : "text-zinc-400"}`}
+                >
+                  {isPurchased ? "Owned Content" : "Premium Access"}
                 </span>
-                <div className="flex items-baseline gap-1">
-                  <span className="text-3xl font-black tracking-tight">
-                    ${recipe.price || "4.99"}
-                  </span>
-                  <span className="text-zinc-400 text-xs font-medium">
-                    one-time purchase
-                  </span>
-                </div>
+
+                {isPurchased ? (
+                  <div className="text-xl font-bold tracking-tight text-zinc-100 pt-1">
+                    You own this guide 🎉
+                  </div>
+                ) : (
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-3xl font-black tracking-tight">
+                      ${recipe.price || "4.99"}
+                    </span>
+                    <span className="text-zinc-400 text-xs font-medium">
+                      one-time purchase
+                    </span>
+                  </div>
+                )}
               </div>
 
               <div className="text-zinc-400 text-xs space-y-2 border-t border-zinc-800 pt-4">
-                <p>• Get unlimited lifetime dashboard access.</p>
                 <p>
-                  • Includes professional {recipe.difficultyLevel || "Medium"}{" "}
-                  tier breakdown.
+                  {isPurchased
+                    ? "✓ Unlimited lifetime dashboard access"
+                    : "• Get unlimited lifetime dashboard access."}
                 </p>
                 <p>
-                  • Verified authentic {recipe.cuisineType || "Bengali"}{" "}
-                  preparation layout steps.
+                  {isPurchased
+                    ? "✓ Includes professional "
+                    : "• Includes professional "}
+                  {recipe.difficultyLevel || "Medium"} tier breakdown.
+                </p>
+                <p>
+                  {isPurchased
+                    ? "✓ Verified authentic "
+                    : "• Verified authentic "}
+                  {recipe.cuisineType || "Bengali"} preparation layout steps.
                 </p>
               </div>
 
-              <PurchaseButton recipeId={recipe._id} price={4.99} />
+              <PurchaseButton
+                recipeId={recipe._id}
+                price={4.99}
+                isLoggedIn={isLoggedIn}
+                isPurchased={isPurchased}
+              />
             </div>
           </div>
         </div>
