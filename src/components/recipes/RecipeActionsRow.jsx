@@ -4,17 +4,18 @@ import React, { useState } from "react";
 import { Heart, Bookmark, AlertTriangle, X } from "lucide-react";
 import toast from "react-hot-toast";
 import { toggleRecipeLikeAction } from "@/lib/actions/recipes";
-import { getLike } from "@/lib/queries/likes";
+import { toggleFavoriteAction } from "@/lib/actions/favorite";
 
 export default function RecipeActionsRow({
   recipeId,
   initialLikes,
   isLoggedIn,
   initialIsLiked,
+  isFavorite,
 }) {
   const [likes, setLikes] = useState(initialLikes);
   const [isLiked, setIsLiked] = useState(initialIsLiked);
-  const [isFavorited, setIsFavorited] = useState(false);
+  const [isFavorited, setIsFavorited] = useState(isFavorite);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [reportReason, setReportReason] = useState("");
 
@@ -32,11 +33,13 @@ export default function RecipeActionsRow({
     );
   };
 
-  const handleFavoriteToggle = () => {
+  const handleFavoriteToggle = async () => {
     setIsFavorited(!isFavorited);
     toast.success(
-      !isFavorited ? "Recipe bookmarked securely" : "Bookmark retracted",
+      !isFavorited ? "Recipe added to favorite" : "Favorite retracted",
     );
+    const res = await toggleFavoriteAction(recipeId);
+    console.log(res);
   };
 
   const handleReportSubmit = (e) => {
