@@ -5,6 +5,7 @@ import { Heart, Bookmark, AlertTriangle, X } from "lucide-react";
 import toast from "react-hot-toast";
 import { toggleRecipeLikeAction } from "@/lib/actions/recipes";
 import { toggleFavoriteAction } from "@/lib/actions/favorite";
+import { addReportAction } from "@/lib/actions/report";
 
 export default function RecipeActionsRow({
   recipeId,
@@ -12,6 +13,7 @@ export default function RecipeActionsRow({
   isLoggedIn,
   initialIsLiked,
   isFavorite,
+  userEmail,
 }) {
   const [likes, setLikes] = useState(initialLikes);
   const [isLiked, setIsLiked] = useState(initialIsLiked);
@@ -42,13 +44,23 @@ export default function RecipeActionsRow({
     console.log(res);
   };
 
-  const handleReportSubmit = (e) => {
+  const handleReportSubmit = async (e) => {
     e.preventDefault();
     if (!reportReason.trim()) return;
 
-    toast.error("Report submitted for administrator review");
-    setIsReportModalOpen(false);
-    setReportReason("");
+    const payload = {
+      recipeId,
+      reporterEmail: userEmail,
+      reason: reportReason,
+    };
+    const res = await addReportAction(payload);
+    if (res.success && res.data.insertedId) {
+      toast.success("Report submitted for administrator review");
+      setIsReportModalOpen(false);
+      setReportReason("");
+      return;
+    }
+    toast.error("Report can not be submitted. Please try again");
   };
 
   return (

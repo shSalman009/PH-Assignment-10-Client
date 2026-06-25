@@ -77,6 +77,7 @@ export default async function RecipeDetailsPage({ params }) {
             isLoggedIn={isLoggedIn}
             initialIsLiked={isLiked}
             isFavorite={isFavorite}
+            userEmail={user?.email}
           />
         </div>
 
