@@ -7,6 +7,7 @@ import { getRecipeById } from "@/lib/queries/recipes";
 import PurchaseButton from "@/components/recipes/PurchaseButton";
 import { getUserSession } from "@/lib/services/session";
 import { getTransaction } from "@/lib/queries/transactions";
+import { getLike } from "@/lib/queries/likes";
 
 export async function generateMetadata({ params }) {
   const { id } = await params;
@@ -33,10 +34,16 @@ export default async function RecipeDetailsPage({ params }) {
   const isLoggedIn = !!user;
 
   let isPurchased = false;
+  let isLiked = false;
   if (isLoggedIn) {
     const transaction = await getTransaction(id);
     if (transaction?.data?._id) {
       isPurchased = true;
+    }
+
+    const like = await getLike(id);
+    if (like?.data?._id) {
+      isLiked = true;
     }
   }
 
@@ -59,6 +66,8 @@ export default async function RecipeDetailsPage({ params }) {
           <RecipeActionsRow
             recipeId={recipe._id}
             initialLikes={recipe.likeCount || 0}
+            isLoggedIn={isLoggedIn}
+            initialIsLiked={isLiked}
           />
         </div>
 

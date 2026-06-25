@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { apiClient } from "../services/apiClient";
 
 // Server Action to create a new recipe
@@ -30,5 +30,18 @@ export async function updateRecipeAction(recipeId, updatePayload) {
     method: "PATCH",
     body: JSON.stringify(updatePayload),
   });
+  return result;
+}
+
+// Recipe Like Toggling
+export async function toggleRecipeLikeAction(recipeId, isCurrentlyLiked) {
+  const actionType = isCurrentlyLiked ? "unlike" : "like";
+
+  const result = await apiClient(`/recipes/${recipeId}/like`, {
+    method: "PATCH",
+    body: JSON.stringify({ action: actionType }),
+  });
+
+  revalidateTag(`recipe-like-${recipeId}`);
   return result;
 }

@@ -3,18 +3,30 @@
 import React, { useState } from "react";
 import { Heart, Bookmark, AlertTriangle, X } from "lucide-react";
 import toast from "react-hot-toast";
+import { toggleRecipeLikeAction } from "@/lib/actions/recipes";
+import { getLike } from "@/lib/queries/likes";
 
-export default function RecipeActionsRow({ recipeId, initialLikes }) {
-  const [isLiked, setIsLiked] = useState(false);
+export default function RecipeActionsRow({
+  recipeId,
+  initialLikes,
+  isLoggedIn,
+  initialIsLiked,
+}) {
   const [likes, setLikes] = useState(initialLikes);
+  const [isLiked, setIsLiked] = useState(initialIsLiked);
   const [isFavorited, setIsFavorited] = useState(false);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [reportReason, setReportReason] = useState("");
 
   const handleLikeToggle = async () => {
-    const nextState = !isLiked;
-    setIsLiked(nextState);
+    const nextState = !initialIsLiked;
+
+    // Optimistic UI Update
     setLikes((prev) => (nextState ? prev + 1 : prev - 1));
+    setIsLiked(!isLiked);
+
+    await toggleRecipeLikeAction(recipeId, initialIsLiked);
+
     toast.success(
       nextState ? "Added to your likes" : "Removed from your likes",
     );
