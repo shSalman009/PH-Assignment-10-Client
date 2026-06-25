@@ -59,7 +59,7 @@ export default function MyRecipesTable({ initialRecipes = [] }) {
   // EMPTY STATE
   if (initialRecipes.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center border border-dashed p-12 text-center bg-muted/10 min-h-100">
+      <div className="flex flex-col rounded-xl items-center justify-center border border-dashed p-12 text-center bg-muted/10 min-h-100">
         <div className="bg-muted p-4 rounded-full mb-4">
           <UtensilsCrossed className="w-8 h-8 text-muted-foreground" />
         </div>

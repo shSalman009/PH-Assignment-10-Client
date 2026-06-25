@@ -35,3 +35,10 @@ export async function getRecipeById(recipeId) {
     method: "GET",
   });
 }
+
+// Get Purchased Recipes
+export async function getPurchasedRecipes() {
+  return await apiClient(`/recipes/purchased`, {
+    method: "GET",
+  });
+}
