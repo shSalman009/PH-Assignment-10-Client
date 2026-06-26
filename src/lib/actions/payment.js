@@ -2,7 +2,7 @@
 
 import { apiClient } from "../services/apiClient";
 
-export async function purchaseRecipeAction(payload) {
+export async function addTransactionAction(payload) {
   const result = await apiClient("/transactions", {
     method: "POST",
     body: JSON.stringify(payload),

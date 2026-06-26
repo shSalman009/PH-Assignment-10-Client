@@ -4,7 +4,7 @@ import Link from "next/link";
 import ProfileUpdateForm from "@/components/dashboard/profile/ProfileUpdateForm";
 import { getUserSession } from "@/lib/services/session";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
+import PremiumPurchaseButton from "@/components/dashboard/profile/PremiumPurchaseButton";
 
 export const metadata = {
   title: "My Profile | Dashboard",
@@ -12,8 +12,6 @@ export const metadata = {
 
 export default async function ProfilePage() {
   const user = await getUserSession();
-
-  console.log(user);
 
   return (
     <div className="space-y-6 w-full max-w-none">
@@ -89,11 +87,15 @@ export default async function ProfilePage() {
               <h3 className="font-black text-orange-900 text-lg mb-2 relative z-10">
                 Unlock Premium
               </h3>
-              <p className="text-orange-700/80 text-sm mb-6 relative z-10 leading-relaxed">
-                Take your culinary profile to the next level. Upgrade your
-                account to bypass standard limits.
-              </p>
 
+              <div className="mt-4 mb-2 flex items-baseline gap-1 text-orange-950">
+                <span className="text-4xl font-black tracking-tight">
+                  $19.99
+                </span>
+                <span className="text-orange-700/60 text-xs font-semibold">
+                  one-time payment
+                </span>
+              </div>
               <ul className="space-y-3 mb-8 relative z-10">
                 <li className="flex items-start gap-2 text-sm text-orange-900 font-medium">
                   <Zap className="h-4 w-4 text-orange-600 mt-0.5 shrink-0" />
@@ -105,12 +107,7 @@ export default async function ProfilePage() {
                 </li>
               </ul>
 
-              <Button
-                variant="primary"
-                className="w-full h-11 rounded-lg bg-primary text-white font-bold text-sm tracking-wide shadow-sm transition-all flex items-center justify-center relative z-10"
-              >
-                Upgrade Account Now
-              </Button>
+              <PremiumPurchaseButton />
             </div>
           )}
         </div>

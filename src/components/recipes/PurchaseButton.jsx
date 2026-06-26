@@ -37,6 +37,7 @@ export default function PurchaseButton({
   return (
     <form action="/api/checkout_sessions" method="POST">
       <input type="hidden" name="recipeId" value={recipeId} />
+      <input type="hidden" name="purchaseType" value="recipe" />
 
       <section>
         <button
