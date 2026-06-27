@@ -20,6 +20,7 @@ export async function deleteRecipeAction(recipeId) {
 
   if (result.success) {
     revalidatePath("/dashboard/my-recipes");
+    revalidatePath("/dashboard/admin/recipes");
   }
   return result;
 }
@@ -30,6 +31,9 @@ export async function updateRecipeAction(recipeId, updatePayload) {
     method: "PATCH",
     body: JSON.stringify(updatePayload),
   });
+  if (result.success) {
+    revalidatePath("/dashboard/admin/recipes");
+  }
   return result;
 }
 
