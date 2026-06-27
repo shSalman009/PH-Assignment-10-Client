@@ -4,6 +4,7 @@ import { getUserSession } from "@/lib/services/session";
 import { ChefHat, Heart, Star, Crown } from "lucide-react";
 import { apiClient } from "@/lib/services/apiClient";
 import PremiumPurchaseButton from "@/components/dashboard/profile/PremiumPurchaseButton";
+import { getUserStats } from "@/lib/queries/stats";
 
 export default async function DashboardOverview() {
   const user = await getUserSession();
@@ -12,18 +13,7 @@ export default async function DashboardOverview() {
     redirect("/login");
   }
 
-  let stats = { totalRecipes: 0, totalFavorites: 0, totalLikesReceived: 0 };
-  try {
-    const response = await apiClient(`/users/${user.id}/stats`, {
-      method: "GET",
-    });
-
-    if (response?.data) {
-      stats = response.data;
-    }
-  } catch (error) {
-    console.error("Failed to fetch dashboard stats:", error);
-  }
+  const stats = await getUserStats(user?.id);
 
   const isPremium = user?.isPremium || false;
 

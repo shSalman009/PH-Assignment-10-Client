@@ -10,3 +10,12 @@ export async function getAdminStats() {
 
   return res?.data || {};
 }
+
+// Get User Stats
+export async function getUserStats(userId) {
+  const res = await apiClient(`/users/${userId}/stats`, {
+    method: "GET",
+  });
+
+  return res?.data || {};
+}
