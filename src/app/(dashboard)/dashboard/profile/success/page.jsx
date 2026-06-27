@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Crown, ArrowRight, Sparkles, User } from "lucide-react";
 import { addTransactionAction } from "@/lib/actions/payment";
+import { getUserSession } from "@/lib/services/session";
 
 export default async function PremiumSuccess({ searchParams }) {
   const { session_id } = await searchParams;
@@ -34,6 +35,7 @@ export default async function PremiumSuccess({ searchParams }) {
       };
 
       await addTransactionAction(payload);
+      getUserSession();
     }
 
     return (
