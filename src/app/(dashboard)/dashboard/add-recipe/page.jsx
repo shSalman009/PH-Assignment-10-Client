@@ -31,8 +31,9 @@ export default async function AddRecipePage() {
   const recipes = response.success ? response.data : [];
 
   const recipeCount = recipes?.length || 0;
-
   const maxRecipes = 2;
+
+  const isLimitReached = !user.isPremium && recipeCount >= maxRecipes;
 
   return (
     <div className="space-y-6 w-full max-w-none">
@@ -43,7 +44,7 @@ export default async function AddRecipePage() {
         </p>
       </div>
 
-      {recipeCount >= maxRecipes ? (
+      {isLimitReached ? (
         <div className="flex items-center justify-center min-h-[60vh] p-6">
           <Card className="max-w-md w-full bg-white border-zinc-100 shadow-xl shadow-zinc-200/50 rounded-3xl p-8 text-center space-y-6">
             <CardHeader className="space-y-4 p-0">
