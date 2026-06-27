@@ -24,7 +24,6 @@ import {
 import Logo from "./Logo";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { authClient } from "@/lib/auth-client";
-import { Spinner } from "@/components/ui/spinner";
 
 // Nav Links Configuration
 const navLinks = [
@@ -60,7 +59,14 @@ export default function Navbar() {
   };
 
   // Filter links based on authentic verification
-  const filteredLinks = navLinks.filter((link) => !link.private || user);
+  const filteredLinks = navLinks
+    .filter((link) => !link.private || user)
+    .map((link) => {
+      if (user?.role === "admin" && link.name === "Dashboard") {
+        return { ...link, href: "/dashboard/admin" };
+      }
+      return link;
+    });
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-md h-16">

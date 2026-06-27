@@ -45,7 +45,7 @@ const userRoutes = [
 ];
 
 const adminRoutes = [
-  { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
+  { name: "Overview", href: "/dashboard/admin", icon: LayoutDashboard },
   { name: "Manage Users", href: "/dashboard/admin/users", icon: Users },
   { name: "Manage Recipes", href: "/dashboard/admin/recipes", icon: FileText },
   {
