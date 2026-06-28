@@ -2,7 +2,7 @@
 
 import { apiClient } from "../services/apiClient";
 
-// Get Recipes
+// Get Transaction
 export async function getTransaction(recipeId) {
   if (!recipeId) {
     return { success: false, error: "Recipe ID required." };
@@ -11,4 +11,13 @@ export async function getTransaction(recipeId) {
   return await apiClient(`/transactions/${recipeId}`, {
     method: "GET",
   });
+}
+
+// Get all the transactions
+export async function getAllTransactions() {
+  const result = await apiClient(`/transactions`, {
+    method: "GET",
+  });
+
+  return result?.data || [];
 }
