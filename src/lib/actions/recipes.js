@@ -13,15 +13,18 @@ export async function createRecipeAction(recipePayload) {
   return result;
 }
 // Server Action to delete recipe
-export async function deleteRecipeAction(recipeId) {
+export async function deleteRecipeAction(recipeId, reportId) {
   const result = await apiClient(`/recipes/${recipeId}`, {
     method: "DELETE",
+    body: JSON.stringify({ reportId }),
   });
 
   if (result.success) {
     revalidatePath("/dashboard/my-recipes");
     revalidatePath("/dashboard/admin/recipes");
+    revalidatePath("/dashboard/admin/reports");
   }
+
   return result;
 }
 
