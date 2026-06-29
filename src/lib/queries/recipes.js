@@ -22,6 +22,13 @@ export async function getFeaturedRecipes() {
   });
 }
 
+// Get Popular Recipes
+export async function getPopularRecipes() {
+  return await apiClient(`/recipes/popular`, {
+    method: "GET",
+  });
+}
+
 // Get Recipe for a user by user id
 export async function getUserRecipes(userId) {
   if (!userId) {
