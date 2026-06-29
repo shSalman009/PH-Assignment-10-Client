@@ -58,7 +58,6 @@ const adminRoutes = [
     href: "/dashboard/admin/transactions",
     icon: CreditCard,
   },
-  { name: "My Profile", href: "/dashboard/profile", icon: User },
 ];
 
 export function DashboardSidebar({ user, ...props }) {
